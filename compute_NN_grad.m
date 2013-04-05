@@ -1,7 +1,7 @@
 function grad = compute_NN_grad(W, X, resp, hout, nonlinearity, nonzero_grad)
 
 % nonlinearity = 1 -- hyperbolic tangent
-% nonlinearity = 2 -- logistic sigmoid (-0.5 last layer)
+% nonlinearity = 2 -- logistic sigmoid (subtract 0.5 from last layer's outputs)
 % nonlinearity = 3 -- logistic sigmoid + hyperbolic tangent (last layer)
 
 ncases = size(resp{1},2);
