@@ -4,7 +4,7 @@
 #include <functional>
 
 /*
-try to solve argmax_h { Wx1.h1 + Wx2.h2 + Wx3.h3 + loss(nb + hamm_dis(h1,h2)-hamm_dis(h1,h3)) }
+solves argmax_h { Wx1.h1 + Wx2.h2 + Wx3.h3 + loss(nb + hamm_dis(h1,h2)-hamm_dis(h1,h3)) }
 
 Input: 
    Wx1, Wx2, Wx3, Loss
