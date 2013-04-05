@@ -1,4 +1,6 @@
 HDML
 ====
 
-An implementation of "Hamming Distance Metric Learning" method by M. Norouzi, D. Fleet, and R. Salakhutdinov, NIPS 2012.
+Start from START.m
+
+This is an implementation of "Hamming Distance Metric Learning, NIPS 2012" method. Some of the files might be missing. Please let me know if you have any problems.
