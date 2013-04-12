@@ -14,11 +14,12 @@
 % Compilation of the mex files
 mex loss_aug_inf_triplet_mex0.cpp CXXFLAGS="\$CXXFLAGS -Wall -fopenmp" LDFLAGS="\$LDFLAGS -fopenmp"
 mex loss_aug_inf_mex0.cpp CXXFLAGS="\$CXXFLAGS -Wall -fopenmp" LDFLAGS="\$LDFLAGS -fopenmp"
+mex utils/hammknn_mex.cpp utils/linscan.cpp CXXFLAGS="\$CXXFLAGS -fopenmp" LDFLAGS="\$LDFLAGS -fopenmp";
 
 % adding some stuff to the path.
 addpath utils; % You should be at thre root of the project to run this line.
+addpath utils/hammknn;
 addpath ~norouzi/research/hashing/yael_v175/matlab/
-addpath ~norouzi/research/hashing/hash-structure/mihash/src/
 
 
 % parameters & RUN2
@@ -31,7 +32,8 @@ NN = 1000;       % Number of same-class items to be used in the positive set for
                  % NN=Inf -> all of the items from the same class
                  % NN=1000 -> find same-class 1000-NN in euclidean distance and set them as target positive examples for each item
 GPU = 0;         % GPU=0 -> No GPU / GPU=1 -> GPU (change this to 1 if you have jacket configured)
-SHRINK_W = 3e-3; % weight decay parameter
+SHRINK_W = [3e-2; 3e-3; 3e-4];
+                 % weight decay parameter -- cross validating on this parameter on 3 candidates
 RUN2             % given the above parameters runs the code
 
 

@@ -117,10 +117,10 @@ if (strcmp(DATA, 'mnist'))
     end
   else
     if (numel(NB) == 1)
-      p.shrink_w = [3e-3]; % 1e-3 1e-2];
+      p.shrink_w = [3e-3 1e-3 1e-2];
       p.loss = {'triplet-ranking', 1, 1};
     else
-      p.shrink_w = ones(numel(NB),1) * [1e-3];% 1e-3 1e-2];
+      p.shrink_w = ones(numel(NB),1) * [1e-3 1e-3 1e-2];
       p.loss = {'triplet-ranking', 1, 1};
     end
   end
@@ -132,8 +132,7 @@ elseif (strcmp(DATA, 'cifar10'))
       % p.shrink_w = [1e-2];
     else
       p.loss = {'hinge', rho, .5, 1};
-      % p.shrink_w = ones(numel(NB),1) * [1e-5 1e-4 1e-3 1e-2];
-      p.shrink_w = ones(numel(NB),1) * [1e-3];
+      p.shrink_w = ones(numel(NB),1) * [1e-5 1e-4 1e-3 1e-2];
     end
   else
     if (numel(NB) == 1)
@@ -142,26 +141,6 @@ elseif (strcmp(DATA, 'cifar10'))
     else
       p.loss = {'triplet-ranking', 1, 1};
       p.shrink_w = ones(numel(NB),1) * [1e-3];
-    end
-  end
-elseif (strcmp(DATA, 'cifar100'))
-  if (which_loss == 0)
-    if (numel(NB) == 1)
-      p.loss = {'hinge', rho, .5, 1};
-      p.shrink_w = [1e-2];
-      % p.shrink_w = [1e-2];
-    else
-      p.loss = {'hinge', rho, .5, 1};
-      % p.shrink_w = ones(numel(NB),1) * [1e-5 1e-4 1e-3 1e-2];
-      p.shrink_w = ones(numel(NB),1) * [1e-3];
-    end
-  else
-    p.loss = {'triplet-ranking', 1, 1};
-    if (numel(NB) == 1)
-      p.shrink_w = [1e-3];
-    else
-      p.shrink_w = ones(numel(NB),1) * [1e-3 1e-4 1e-5];
-      p.eta = .001;
     end
   end
 end
@@ -214,7 +193,7 @@ else
   W_shrinkw = todouble(W_shrinkw);
   save([folder_name, '/', file_name], 'initW', 'W_shrinkw');
 
-  W = best_err(W_shrinkw, 'shrink_w');
+  W = best_acc(W_shrinkw, 'shrink_w');
   fprintf('Best weight decay (%d bits) = %.0d\n', p.nb(end), W.params.shrink_w(1));
   p.shrink_w = W.params.shrink_w;
 end
@@ -239,7 +218,7 @@ if (LOSS == 0 && numel(p.loss{2}) > 1)
   W_rho = todouble(W_rho);
   save([folder_name, '/', file_name], 'initW', 'W_rho', 'W_shrinkw');
   
-  W = best_err(W_rho, 'loss.rho');
+  W = best_acc(W_rho, 'loss.rho');
   fprintf('Best loss rho (%d bits) = %.0f\n', p.nb(end), W.params.loss.rho);
   p.loss{2} = W.params.loss.rho;
 else

@@ -170,7 +170,7 @@ npos = 0;
 nneg = 0;
 
 mean_ap  = 0;
-avg_err = Inf;
+avg_acc = Inf;
 nnz = 0;
 fracs = [0 0];
 
@@ -868,20 +868,20 @@ for t=1:maxt
   
   if (param.nval_during && t < maxiter)
     if (mod(t, tval) == 0)
-      [ap err err2] = eval(data, W, param, rho, verbose);
-      param.testerr(ceil(t/tval)) = err;
-      param.trainerr(ceil(t/tval)) = err2;      
+      [ap acc acc2] = eval(data, W, param, rho, verbose);
+      param.testacc(ceil(t/tval)) = acc;
+      param.trainacc(ceil(t/tval)) = acc2;      
     end
   end
   
   if (param.nval_after && t >= maxiter)
-    [ap err err2] = eval(data, W, param, rho, verbose);
-    param.testerr(floor((maxiter-1)/tval)+t-maxiter+1) = err;
-    param.trainerr(floor((maxiter-1)/tval)+t-maxiter+1) = err2;      
-    if (isinf(avg_err))
-      avg_err = 0;
+    [ap acc acc2] = eval(data, W, param, rho, verbose);
+    param.testacc(floor((maxiter-1)/tval)+t-maxiter+1) = acc;
+    param.trainacc(floor((maxiter-1)/tval)+t-maxiter+1) = acc2;      
+    if (isinf(avg_acc))
+      avg_acc = 0;
     end
-    avg_err = avg_err + err;
+    avg_acc = avg_acc + acc;
     mean_ap = mean_ap  + ap;
   end
 end
@@ -890,11 +890,11 @@ time_full = toc(tic_id_full);
 
 if (param.nval_after)
   mean_ap  = mean_ap  / param.nval_after;
-  avg_err = avg_err / param.nval_after;
+  avg_acc = avg_acc / param.nval_after;
   if (verbose)
     fprintf('Mean ap over %d final step(s): %.3f', param.nval_after, mean_ap);
-    if (~isinf(avg_err))
-      fprintf(' ~~~ mean error: %.4f', avg_err);
+    if (~isinf(avg_acc))
+      fprintf(' ~~~ mean accuracy: %.4f', avg_acc);
     end
     fprintf(' ~~~ time(s): %.2f', time_full)
     fprintf('                   \n');
@@ -904,20 +904,23 @@ end
 param.x_dim = input_dim;
 param.nns = data.nns;
 param.ap  = mean_ap;
-param.err = avg_err;
+param.acc = avg_acc;
 param.l = loss(:,1);
 final_W = W;
 final_params = param;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-function [ap err err2] = eval(data, W, param, rho, verbose)
+function [ap acc acc2] = eval(data, W, param, rho, verbose)
 
-err = NaN;  % err and err2 can be used to return any other types of error concerned.
-err2 = NaN;
+acc = NaN;  % acc and acc2 can be used to return any other types of accuracy concerned.
+acc2 = NaN;
 
 if (strcmp(data.MODE(1:min(numel(data.MODE),9)), 'sem-mnist') || strcmp(data.MODE(1:min(numel(data.MODE),8)), 'cifar-10')) %mnist
-  [err err2] = eval_mnist(data, W, 3, param.nonlinearity);
+  knn = 3;
+  [acc acc2] = eval_hammknn(data, W, knn, param.nonlinearity);
+  acc = acc(knn);
+  acc2 = acc2(knn);
 end
 
 if ~(strcmp(data.MODE, 'inria-sift-1B') || strcmp(data.MODE, 'inria-sift-1M') || strcmp(data.MODE(1:min(numel(data.MODE),9)), 'sem-mnist') || strcmp(data.MODE(1:min(numel(data.MODE),8)), 'cifar-10'))
@@ -952,8 +955,8 @@ elseif (~strcmp(data.MODE(1:min(numel(data.MODE),9)), 'sem-mnist') && ~strcmp(da
   end
 end
 
-if (~isnan(err))
-  fprintf(' ~~~ err(test): %.4f ~~~ err(training): %.4f ', err, err2);
+if (~isnan(acc))
+  fprintf(' ~~~ acc(test): %.4f ~~~ acc(training): %.4f ', acc, acc2);
 end
 
 fprintf('\n');
