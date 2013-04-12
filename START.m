@@ -32,7 +32,7 @@ NN = 1000;       % Number of same-class items to be used in the positive set for
                  % NN=Inf -> all of the items from the same class
                  % NN=1000 -> find same-class 1000-NN in euclidean distance and set them as target positive examples for each item
 GPU = 0;         % GPU=0 -> No GPU / GPU=1 -> GPU (change this to 1 if you have jacket configured)
-SHRINK_W = [3e-2; 3e-3; 3e-4];
+SHRINK_W = [3e-2 3e-3 3e-4];
                  % weight decay parameter -- cross validating on this parameter on 3 candidates
 RUN2             % given the above parameters runs the code
 
