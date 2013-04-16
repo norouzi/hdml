@@ -1,8 +1,3 @@
-// mex hamm_knn_classify_mex.cpp hamm_knn_classify.cpp /u/norouzi/research/hashing/mih/src/linscan.cpp -I/u/norouzi/research/hashing/mih/include/ CXXFLAGS="\$CXXFLAGS -fopenmp" LDFLAGS="\$LDFLAGS -fopenmp";
-// mex -I../include/ linscan_sorted_mex.cpp
-
-// mex mihash_mex.cpp mihasher.cpp array.cpp hashtable.cpp bitarray.cpp
-
 #include <mex.h>
 #include <stdio.h>
 #include <string.h>
@@ -22,6 +17,7 @@
 #define mxN		prhs[5]	// number of data points to use
 #define mxB		prhs[6]	// number of bits per code
 #define mxK		prhs[7]	// k in hamming kNN classifier
+// pointers labels == labels2 being identical means that this is a 1-leave-out cross validation for the training set.
 
 
 // OUTPUTS --------------------
@@ -34,7 +30,6 @@ void myAssert(int a, const char *b) {
 	mexErrMsgTxt(b);
 }
 
-// labels_test == labels (pointers being identical) means that this is a 1-leave-out cross validation for the training set.
 void classify(unsigned int *correct, int maxk, int K, UINT32 *counter, int B, UINT32 *res, unsigned int *labels, unsigned int *labels_test, int NQ, int nlabels) {
     int *label_count = new int[nlabels];
     for (int i=0; i<NQ; i++) {
@@ -51,10 +46,11 @@ void classify(unsigned int *correct, int maxk, int K, UINT32 *counter, int B, UI
 		new_cum_nn = K;
 	    
 	    for (int j=cum_nn; j<new_cum_nn; j++) {
-		int neighbor = res[i*K+j]; // TODO: make sure to be 0-based
- 		if (labels == labels_test && neighbor == i)
+		int neighbor = res[i*K+j]; // make sure res is 0-based
+ 		if (labels == labels_test && neighbor == i) {
 		    itsown = 1;
-		else
+		    lastk++; // we will subtract "itsown" from "k" later, so lask++
+		} else
 		    label_count[labels[neighbor]]++;
 	    }
 
@@ -69,7 +65,7 @@ void classify(unsigned int *correct, int maxk, int K, UINT32 *counter, int B, UI
 		} else if (count_pred == label_count[j]) { // ties
 		    tie = 1;
 		}
-	    if (!tie || new_cum_nn == K) {
+	    if (!tie || new_cum_nn == K) { // if it is not a tie, or the max number of neighbors is reached, we will update number of correct predictions for values of k from lastk up to min(maxk, new_cum_nn).
 		for (int k=lastk; k<std::min(maxk+itsown, new_cum_nn); k++) {
 		    if (labels_test[i] == pred)
 			correct[k-itsown]++;
