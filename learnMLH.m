@@ -10,7 +10,7 @@ function [mean_ap final_W Wall final_params] = learnMLH(data, param, verbose, in
 % Input:
 %    data: data structure for training the model already split into training and validation sets.
 %    param: a parameter structure which should include the required parameters.
-%    verbose: either 0 or a positive number i, writing debug information every i epochs or not
+%    verbose: either 0 or a positive number i, writing debug information every i epochs, and adapting learning rate based on average of loss in every i epochs. Since a small value of i results in very fast change of learning rate, for small i, consider not using bold driver learning rate adaptation.
 %    initW: initial weight matrix. initW is a cell array for neural nets
 %
 % Output:
@@ -265,7 +265,7 @@ for t=1:maxt
   end
   
   if (t <= min(25,maxt/20))
-    mementum = param.momentum/2;
+    momentum = param.momentum/2;        % this is probably not important
   else
     momentum = param.momentum;
   end
