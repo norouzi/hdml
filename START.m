@@ -18,8 +18,7 @@ mex utils/hammknn_mex.cpp utils/linscan.cpp CXXFLAGS="\$CXXFLAGS -fopenmp" LDFLA
 
 % adding some stuff to the path.
 addpath utils; % You should be at thre root of the project to run this line.
-addpath utils/hammknn;
-addpath ~norouzi/research/hashing/yael_v175/matlab/
+addpath /YAEL_HOME/matlab/ % download and install yael library and change this line
 
 
 % parameters & RUN2
