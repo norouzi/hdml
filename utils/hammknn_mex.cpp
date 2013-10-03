@@ -9,21 +9,25 @@
 
 // INPUTS --------------------
 
-#define mxnlabels       prhs[0] // number of class labels
-#define mxcodes		prhs[1] // db binary codes
-#define mxlabels        prhs[2] // class labels for db codes
-#define mxqueries 	prhs[3] // query binary codes
-#define mxlabels2       prhs[4] // class labels for query codes
-#define mxN		prhs[5]	// number of data points to use
-#define mxB		prhs[6]	// number of bits per code
-#define mxK		prhs[7]	// k in hamming kNN classifier
-// pointers labels == labels2 being identical means that this is a 1-leave-out cross validation for the training set.
+#define mxnlabels       prhs[0]  // number of class labels
+#define mxcodes		prhs[1]  // db binary codes
+#define mxlabels        prhs[2]  // class labels for db codes
+#define mxqueries 	prhs[3]  // query binary codes
+#define mxlabels2       prhs[4]  // class labels for query codes
+#define mxN		prhs[5]	 // number of data points to use
+#define mxB		prhs[6]	 // number of bits per code
+#define mxK		prhs[7]	 // k in hamming kNN classifier
+
+// pointers labels and labels2 being identical means that this is a
+// 1-leave-out cross validation for the training set.
 
 
 // OUTPUTS --------------------
 
 #define mxcorrect	plhs[0]
-#define mxcorrect2	plhs[1]
+#define mxcorrect2	plhs[1]  // this output is optional. If it is
+                                 // provide then 1-leave-out cross
+                                 // validation results are reported.
 
 void myAssert(int a, const char *b) {
     if (!a)
@@ -86,7 +90,7 @@ void mexFunction( int nlhs, mxArray *plhs[],
 {
     if (nrhs != 8)
 	mexErrMsgTxt("Wrong number of inputs\n");
-    if (nlhs != 2)
+    if (nlhs != 2 && nlhs != 1)
 	mexErrMsgTxt("Wrong number of outputs\n");
     
     int N = (int)(UINT32) *(mxGetPr(mxN));
@@ -118,28 +122,27 @@ void mexFunction( int nlhs, mxArray *plhs[],
     myAssert(NQ == mxGetM(mxlabels2) * mxGetN(mxlabels2),
              "labels2 dimensionality != number of queries");
 
-    mxcorrect = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
-    mxcorrect2 = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
-    unsigned int *correct  = (unsigned int*) (UINT32 *) mxGetPr(mxcorrect);
-    unsigned int *correct2 = (unsigned int*) (UINT32 *) mxGetPr(mxcorrect2);
-
-    int K = maxk*5 + 100;
+    int K = maxk * 5 + 100;
     if (K > N)
 	K = N;
+
+    mxcorrect = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
+    unsigned int *correct  = (unsigned int*) (UINT32 *) mxGetPr(mxcorrect);
     UINT32 *counter = new UINT32[(B+1)*NQ];
     UINT32 *res = new UINT32[K*NQ];
-
     linscan_query(counter, res, codes_db, codes_query, N, NQ, B, K, B/8, B/8);
     classify(correct, maxk, K, counter, B, res, label_db, label_query, NQ, nlabels);
-    
     delete[] counter;
     delete[] res;
-    counter = new UINT32[(B+1)*N];
-    res = new UINT32[K*N];
 
-    linscan_query(counter, res, codes_db, codes_db, N, N, B, K, B/8, B/8);
-    classify(correct2, maxk, K, counter, B, res, label_db, label_db, N, nlabels);
-    
-    delete[] counter;
-    delete[] res;
+    if (nlhs == 2) {
+        mxcorrect2 = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
+        unsigned int *correct2 = (unsigned int*) (UINT32 *) mxGetPr(mxcorrect2);
+        counter = new UINT32[(B+1)*N];
+        res = new UINT32[K*N];
+        linscan_query(counter, res, codes_db, codes_db, N, N, B, K, B/8, B/8);
+        classify(correct2, maxk, K, counter, B, res, label_db, label_db, N, nlabels);
+        delete[] counter;
+        delete[] res;
+    }
 }
