@@ -106,13 +106,17 @@ void mexFunction( int nlhs, mxArray *plhs[],
     myAssert(mxIsUint8(mxqueries), "queries is not uint8");
     myAssert(mxIsUint8(mxcodes), "codes is not uit8");
     myAssert(mxIsUint32(mxlabels), "labels is not uint32");
+    myAssert(mxIsUint32(mxlabels2), "labels2 is not uint32");
     myAssert(mxGetN(mxcodes) >= N, "number of codes < N");
     myAssert(dim1codes >= B/8, "dim1codes < B/8");
     myAssert(dim1queries >= B/8, "dim1queries < B/8");	// not sure about this
     myAssert(B % 8 == 0, "mod(B,8) != 0");
-
     myAssert(dim1codes == B/8, "dim1codes != B/8");
     myAssert(dim1queries == B/8, "dim1queries != B/8");	// not sure about this
+    myAssert(N == mxGetM(mxlabels) * mxGetN(mxlabels),
+             "labels dimensionality != number of codes");
+    myAssert(NQ == mxGetM(mxlabels2) * mxGetN(mxlabels2),
+             "labels2 dimensionality != number of queries");
 
     mxcorrect = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
     mxcorrect2 = mxCreateNumericMatrix(maxk, 1, mxUINT32_CLASS, mxREAL);
